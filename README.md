@@ -71,3 +71,63 @@ Controller事件大部分都是由 Pawn 来实现，例如 合金弹头和魂斗
 
 Pawn：直接的Pawn子类可以用于2D游戏或者摄像机固定的，并且不需要考虑屏幕窗口移动位置的游戏类型，<br/>
 直接使用蓝图或者代码来添加一个垂直的或者水平的相机，就可以实现一种平面的游戏视图。
+
+## About Android touch event
+
+在项目设置中，引擎-输入 部分，有一个 Use mouse input as touch 的设置，要打开，或者直接把<br/>
+当前的游戏目标平台直接调整为移动设备，这样，游戏蓝图中Actor的事件有一个 onTouchBegin 就可以作为触摸点击的入口。<br/>
+
+## About Android Package
+
+关于Android打包，需要进行如下的环境配置：<br/>
+
+1. 下载JDK，注意如果使用Ant 1.8 那么需要设置 JAVA_HOME 环境变量；
+1. 下载 Apache Ant 脚本工具，用于Android程序编译打包，推荐使用 1.9，设置环境变量 ANT_HOME;
+1. 下载 Android SDK，设置 ANDROID_HOME 指向SDK目录，并且下载 Android API 19 SDK Platform!!
+1. 注意 <font color="red">Android SDK 版本要低于 24，因为默认的android命令失效；确保android命令正常执行！！；</font>
+1. 下载 Android Extra Support Repository
+1. 下载 Google support Repository, 以及  Market_billing, market_license 支持库
+1. 下载 Android NDK ，<font color="red">注意必须是 r12b 最好不要超，测试 r13可以，但是 r14b 不能用；</font>
+1. 设置 NDKROOT 环境变量，指向 Android NDK 目录；
+
+工程设置：<br/>
+1. 工程项目的目标平台调整为移动设备；
+1. 选择项目设置-平台-Android SDK 部分，设置目标的版本为 android-19；
+1. 注意如果 版本设置到 22 或者 24，将无法编译游戏；
+1. 选择项目设置-平台-Android 设置自己的包名；打包方式；
+1. 设置数字签名的 keystore，别名，密码；
+1. 选择打包的CPU类型，如果希望打包x86，那么需要使用源码编译虚幻4引擎；
+1. 关于源码编译x86版本出现错误的问题！！
+
+关于源码编译x86版本出现问题的解决方式：
+
+平台：Mac OS X<br/>
+NDK：r12b<br/>
+V4.10 ～ V4.15<br/>
+
+请修改 Engine/Source/ThirdParty/Physx/PxShared/include/foundation/PxPreprocessor.h<br/>
+其中的代码：<br/>
+<code>
+  <pre>
+  // static assert
+  #if(defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (PX_PS4) || (PX_APPLE_FAMILY) || (PX_NX)
+  #define PX_COMPILE_TIME_ASSERT(exp) typedef char PxCompileTimeAssert_Dummy[(exp) ? 1 : -1] __attribute__((unused))
+  #else
+  #define PX_COMPILE_TIME_ASSERT(exp) typedef char PxCompileTimeAssert_Dummy[(exp) ? 1 : -1]
+  #endif
+  </pre>
+</code>
+<br/>
+以上的代码编译器会检测，发现数组最终会使用 -1，作为数组的长度，那么现在新的编译器会认为这是一个错误，将无法进行编译；<br/>
+将 -1 修改为 0 即可，两处都需要修改；<br/>
+<code>
+  <pre>
+  // static assert
+  #if(defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (PX_PS4) || (PX_APPLE_FAMILY) || (PX_NX)
+  #define PX_COMPILE_TIME_ASSERT(exp) typedef char PxCompileTimeAssert_Dummy[(exp) ? 1 : 0] __attribute__((unused))
+  #else
+  #define PX_COMPILE_TIME_ASSERT(exp) typedef char PxCompileTimeAssert_Dummy[(exp) ? 1 : 0]
+  #endif
+  </pre>
+</code>
+<br/>
