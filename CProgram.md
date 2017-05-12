@@ -33,3 +33,10 @@ AMatch3GameMode::AMatch3GameMode(const FObjectInitializer& ObjectInitializer) : 
 	FinalPlace = 0;
 }
 </pre></code><br/>
+
+## 关于 C++代码与蓝图的关系
+
+C++代码可以声明Pawn, Actor, 同时，在这些类的内部通常不会创建特定的实例类型，而是使用抽象的类型；<br/>
+例如一个Actor中，创建一个Paper2D Sprite组件，那么不是要直接在创建一个组件的子类；而是直接使用<br/>
+UPaperSpriteComponent 来声明，并且可以通过 CreateDefaultSubObject 方式来指定名称；<br/>
+配合代码中声明为蓝图属性，那么之后在要使用这个Actor的时候，通常都是创建一个蓝图类，这个类就是我们创建的那个C++类型。<br/>
